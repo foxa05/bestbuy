@@ -1,5 +1,6 @@
-from products import Product
 from store import Store
+from products import Product, NonStockedProduct, LimitedProduct, SecondHalfPrice, ThirdOneFree, PercentDiscount
+
 
 def display_menu():
     print("--------")
@@ -8,16 +9,24 @@ def display_menu():
     print("3. Make an order")
     print("4. Quit")
 
+
 def view_all_products(store):
     print("---- All Products ----")
     products = store.get_all_products()
-    for product in products:
-        product.show()
+    for i, product in enumerate(products, start=1):
+        promotion_info = product.get_promotion().name if product.get_promotion() else "None"
+        if isinstance(product, LimitedProduct):
+            quantity_info = f"Quantity: {product.get_quantity()}, Limited to {product.maximum} per order!"
+        else:
+            quantity_info = f"Quantity: Unlimited"
+        print(f"{i}. {product.name}, Price: ${product.price}, {quantity_info}, Promotion: {promotion_info}")
+
 
 def view_total_quantity(store):
     total_quantity = store.get_total_quantity()
     print("---- Total Quantity ----")
     print(f"Total Quantity: {total_quantity}")
+
 
 def order_products(store):
     print("---- Order Products ----")
@@ -51,12 +60,27 @@ def order_products(store):
     else:
         print("No products were ordered")
 
+
 def main():
     product_list = [
-        Product("MacBook Air M2", price=1450, quantity=100),
-        Product("Bose QuietComfort Earbuds", price=250, quantity=500),
+        LimitedProduct("MacBook Air M2", price=1450, quantity=100, maximum=2),
+        LimitedProduct("Bose QuietComfort Earbuds", price=250, quantity=500, maximum=3),
         Product("Google Pixel 7", price=500, quantity=250),
+        NonStockedProduct("Windows License", price=125),
+        LimitedProduct("Shipping", price=10, quantity=250, maximum=1)
     ]
+
+    promotions = [
+        SecondHalfPrice("Second Half price!"),
+        ThirdOneFree("Third One Free!"),
+        None,
+        PercentDiscount("30% off!", percent=30),
+        None
+    ]
+
+    for i, product in enumerate(product_list):
+        if i < len(promotions):
+            product.set_promotion(promotions[i])
 
     best_buy = Store(product_list)
 
@@ -79,5 +103,7 @@ def main():
 
         print()
 
+
 if __name__ == '__main__':
     main()
+
